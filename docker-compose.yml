@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  jupyter:
+    build: .
+    container_name: jupyter-pythonico
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: >
+      jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
