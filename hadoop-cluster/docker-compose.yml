@@ -13,7 +13,24 @@ services:
       - "9000:9000"
     volumes:
       - namenode_data:/hadoop/dfs/name
-    network_mode: "bridge"
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+
+  resourcemanager:
+    image: bde2020/hadoop-resourcemanager:2.0.0-hadoop3.2.1-java8
+    container_name: hadoop-resourcemanager
+    restart: always
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
+      - YARN_CONF_yarn_resourcemanager_hostname=resourcemanager
+    ports:
+      - "8088:8088"
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    depends_on:
+      - namenode
 
   datanode1:
     image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
@@ -24,6 +41,27 @@ services:
       - SERVICE_PRECONDITION=namenode:9870
     volumes:
       - datanode1_data:/hadoop/dfs/data
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    depends_on:
+      - namenode
+
+  nodemanager1:
+    image: bde2020/hadoop-nodemanager:2.0.0-hadoop3.2.1-java8
+    container_name: hadoop-nodemanager1
+    restart: always
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
+      - YARN_CONF_yarn_resourcemanager_hostname=resourcemanager
+      - SERVICE_PRECONDITION=namenode:9870,resourcemanager:8088
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    depends_on:
+      - namenode
+      - resourcemanager
+      - datanode1
 
   datanode2:
     image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
@@ -34,6 +72,27 @@ services:
       - SERVICE_PRECONDITION=namenode:9870
     volumes:
       - datanode2_data:/hadoop/dfs/data
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    depends_on:
+      - namenode
+
+  nodemanager2:
+    image: bde2020/hadoop-nodemanager:2.0.0-hadoop3.2.1-java8
+    container_name: hadoop-nodemanager2
+    restart: always
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:8020
+      - YARN_CONF_yarn_resourcemanager_hostname=resourcemanager
+      - SERVICE_PRECONDITION=namenode:9870,resourcemanager:8088
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    depends_on:
+      - namenode
+      - resourcemanager
+      - datanode2
 
 volumes:
   namenode_data:
