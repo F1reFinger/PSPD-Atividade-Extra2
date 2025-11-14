@@ -5,10 +5,59 @@ services:
     build: .
     container_name: jupyter-pythonico
     ports:
-      - "8888:8888"
+      - "8890:8888"
     volumes:
       - .:/app
     environment:
       - PYTHONUNBUFFERED=1
-    command: >
-      jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+      - SPARK_HOME=/opt/spark
+      - JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+    networks:
+      - hadoop-net
+    depends_on:
+      - namenode
+
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: hadoop-namenode-new
+    ports:
+      - "9101:9000"
+      - "9881:9870"
+    environment:
+      - CLUSTER_NAME=hadoop-cluster
+    volumes:
+      - namenode:/hadoop/dfs/name
+    networks:
+      - hadoop-net
+
+  datanode1:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: hadoop-datanode1-new
+    volumes:
+      - datanode1:/hadoop/dfs/data
+    environment:
+      - CLUSTER_NAME=hadoop-cluster
+    networks:
+      - hadoop-net
+    depends_on:
+      - namenode
+
+  datanode2:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: hadoop-datanode2-new
+    volumes:
+      - datanode2:/hadoop/dfs/data
+    environment:
+      - CLUSTER_NAME=hadoop-cluster
+    networks:
+      - hadoop-net
+    depends_on:
+      - namenode
+
+networks:
+  hadoop-net:
+
+volumes:
+  namenode:
+  datanode1:
+  datanode2:
